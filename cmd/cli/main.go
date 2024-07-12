@@ -48,12 +48,18 @@ func main() {
 
 	slog.Info(fmt.Sprintf("API token verified: %s", token.Status))
 
+	// first run
+	handler(ctx, api, cfg.DryRun, cfg.ZoneName, cfg.RecordName)()
+
 	if cfg.Frequency <= 0 {
-		handler(ctx, api, cfg.DryRun, cfg.ZoneName, cfg.RecordName)()
+		slog.Debug("no frequency set, exiting")
 		return
 	}
 
-	_, err = s.NewJob(gocron.DurationJob(time.Duration(cfg.Frequency)*time.Minute), gocron.NewTask(handler(ctx, api, cfg.DryRun, cfg.ZoneName, cfg.RecordName)))
+	interval := time.Duration(cfg.Frequency) * time.Minute
+	slog.Debug(fmt.Sprintf("scheduling job every %s minutes", interval))
+
+	_, err = s.NewJob(gocron.DurationJob(interval), gocron.NewTask(handler(ctx, api, cfg.DryRun, cfg.ZoneName, cfg.RecordName)))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -77,7 +77,6 @@ func handler(ctx context.Context, api *cloudflare.API, dryRun bool, zoneName, re
 		}
 		defer resp.Body.Close()
 
-		// decode the response
 		var ip IPAddress
 		if err := json.NewDecoder(resp.Body).Decode(&ip); err != nil {
 			slog.Error(fmt.Sprintf("failed to decode IP address: %s", err.Error()))
@@ -91,7 +90,6 @@ func handler(ctx context.Context, api *cloudflare.API, dryRun bool, zoneName, re
 			log.Fatal(err)
 		}
 
-		// update the IP address
 		records, _, err := api.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{Type: "A"})
 		if err != nil {
 			return

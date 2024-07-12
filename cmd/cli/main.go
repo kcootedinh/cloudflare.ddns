@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/cloudflare/cloudflare-go"
@@ -59,10 +60,14 @@ func main() {
 
 	s.Start()
 
-	select {
-	case <-time.After(time.Minute):
-	}
+	// Wait for CTRL-C
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+	// We block here until a CTRL-C / SigInt is received
+	// Once received, we exit and the server is cleaned up
+	<-sigChan
 
+	slog.Info("shutting down")
 	err = s.Shutdown()
 	if err != nil {
 		log.Fatal(err)

@@ -19,12 +19,14 @@ type IPAddress struct {
 }
 
 func main() {
-	s, err := gocron.NewScheduler()
+	cfg, err := loadConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(fmt.Errorf("error loading config: %w", err))
 	}
 
-	cfg, err := loadConfig()
+	slog.SetLogLoggerLevel(cfg.LogLevel)
+
+	s, err := gocron.NewScheduler()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,29 +73,31 @@ func handler(ctx context.Context, api *cloudflare.API, dryRun bool, zoneName, re
 	return func() {
 		resp, err := http.Get("https://api.ipify.org?format=json")
 		if err != nil {
-			slog.Error(fmt.Sprintf("failed to get IP address: %s", err.Error()))
+			slog.Error(fmt.Sprintf("failed to send ipify request: %s", err.Error()))
 			return
 		}
 		defer resp.Body.Close()
 
 		var ip IPAddress
 		if err := json.NewDecoder(resp.Body).Decode(&ip); err != nil {
-			slog.Error(fmt.Sprintf("failed to decode IP address: %s", err.Error()))
+			slog.Error(fmt.Sprintf("failed to decode ipify response: %s", err.Error()))
 			return
 		}
 
-		slog.Info(fmt.Sprintf("IP address: %s", ip.IP), slog.Time("time", time.Now()))
+		slog.Info(fmt.Sprintf("ipify returned IP address: %s", ip.IP))
 
 		zoneID, err := api.ZoneIDByName(zoneName)
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		slog.Info("getting DNS records")
 		records, _, err := api.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{Type: "A"})
 		if err != nil {
 			return
 		}
 
+		slog.Debug(fmt.Sprintf("found %d records", len(records)))
 		var target *cloudflare.DNSRecord
 		for _, record := range records {
 			if record.Name == recordName {
@@ -103,14 +107,14 @@ func handler(ctx context.Context, api *cloudflare.API, dryRun bool, zoneName, re
 		}
 
 		if target == nil {
-			slog.Error("target record not found")
+			slog.Error("configured target record not found")
 			return
 		}
 
-		slog.Info(fmt.Sprintf("target record: %s, %s", target.Name, target.Content))
+		slog.Debug(fmt.Sprintf("target record: %s, %s", target.Name, target.Content))
 
 		if target.Content == ip.IP {
-			slog.Info("IP address has not changed")
+			slog.Info("target record already up to date, skipping update")
 			return
 		}
 
@@ -121,10 +125,10 @@ func handler(ctx context.Context, api *cloudflare.API, dryRun bool, zoneName, re
 
 		_, err = api.UpdateDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.UpdateDNSRecordParams{ID: target.ID, Content: ip.IP})
 		if err != nil {
-			slog.Error(fmt.Sprintf("failed to update IP address: %s", err.Error()))
+			slog.Error(fmt.Sprintf("failed to update target DNS record content: %s", err.Error()))
 			return
 		}
 
-		slog.Info("IP address updated")
+		slog.Info("IP address set on target DNS record")
 	}
 }

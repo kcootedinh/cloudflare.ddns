@@ -14,6 +14,7 @@ type Config struct {
 	CloudflareKey string
 	ZoneName      string
 	RecordName    string
+	LogLevel      slog.Level
 }
 
 func loadConfig() (Config, error) {
@@ -39,6 +40,17 @@ func loadConfig() (Config, error) {
 		frequencyInt = 0
 	}
 
+	logLevel, ok := os.LookupEnv("LOG_LEVEL")
+	if !ok {
+		logLevel = "0"
+	}
+
+	logLevelInt, err := strconv.ParseInt(logLevel, 10, 32)
+	if err != nil {
+		slog.Error(fmt.Sprintf("failed to parse LOG_LEVEL, %s", err.Error()))
+		logLevelInt = 0
+	}
+
 	zoneName, ok := os.LookupEnv("ZONE_NAME")
 	if !ok {
 		return Config{}, errors.New("ZONE_NAME is required")
@@ -55,5 +67,6 @@ func loadConfig() (Config, error) {
 		CloudflareKey: cloudflareKey,
 		ZoneName:      zoneName,
 		RecordName:    recordName,
+		LogLevel:      slog.Level(logLevelInt),
 	}, nil
 }

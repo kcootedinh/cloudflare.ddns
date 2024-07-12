@@ -34,7 +34,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Most API calls require a Context
 	ctx := context.Background()
 
 	slog.Info("verifying Cloudflare API token")

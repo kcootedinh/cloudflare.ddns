@@ -28,7 +28,6 @@ func loadConfig() (Config, error) {
 		return Config{}, errors.New("CLOUDFLARE_API_TOKEN is required")
 	}
 
-	// load config from env vars
 	frequency, ok := os.LookupEnv("POLL_FREQUENCY")
 	if !ok {
 		frequency = "0"

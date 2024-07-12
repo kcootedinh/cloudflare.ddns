@@ -29,14 +29,14 @@ func loadConfig() (Config, error) {
 		return Config{}, errors.New("CLOUDFLARE_API_TOKEN is required")
 	}
 
-	frequency, ok := os.LookupEnv("POLL_FREQUENCY")
+	frequency, ok := os.LookupEnv("JOB_FREQUENCY")
 	if !ok {
 		frequency = "0"
 	}
 
 	frequencyInt, err := strconv.ParseInt(frequency, 10, 32)
 	if err != nil {
-		slog.Error(fmt.Sprintf("failed to parse POLL_FREQUENCY, %s", err.Error()))
+		slog.Error(fmt.Sprintf("failed to parse JOB_FREQUENCY, %s", err.Error()))
 		frequencyInt = 0
 	}
 

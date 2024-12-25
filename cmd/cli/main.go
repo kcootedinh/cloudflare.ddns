@@ -99,12 +99,14 @@ func handler(ctx context.Context, api *cloudflare.API, dryRun bool, zoneName, re
 
 		zoneID, err := api.ZoneIDByName(zoneName)
 		if err != nil {
-			log.Fatal(err)
+			slog.Error(fmt.Sprintf("failed to get zone ID for %s: %s", zoneName, err.Error()))
+			return
 		}
 
 		slog.Info("getting DNS records")
 		records, _, err := api.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), cloudflare.ListDNSRecordsParams{Type: "A"})
 		if err != nil {
+			slog.Error(fmt.Sprintf("failed to list DNS records: %s", err.Error()))
 			return
 		}
 

@@ -5,7 +5,7 @@ A Go app written to poll the WAN IP address of a local network and then update a
 I wrote this to use on a NAS as Cloudflare wasn't a supported DDNS provider of either Synology or Unifi.
 
 ## Quick start
-`docker run -e CLOUDFLARE_API_TOKEN=<token> -e ZONE_NAME=<dns zone> -e RECORD_NAME=<A record to update> -e ghcr.io/kcootedinh/cloudflare.ddns:latest`
+`docker run -e CLOUDFLARE_API_TOKEN=<token> -e ZONE_NAME=<dns zone> -e RECORD_NAME=<A record to update> ghcr.io/kcootedinh/cloudflare.ddns:latest`
 
 ## Optional
 You can specify the log level with the environment var `LOG_LEVEL`. These are the Golang slog log levels. Default is level 0 and equates to `INFO`. `DEBUG` is "-4".

@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /cloudflare-ddns-updater cloudflare.ddn
 FROM build-stage AS run-test-stage
 RUN go test -v ./...
 
-FROM gcr.io/distroless/static-debian11 AS build-release-stage
+FROM gcr.io/distroless/static-debian12 AS build-release-stage
 
 WORKDIR /
 

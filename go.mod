@@ -16,7 +16,7 @@ require (
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/net v0.37.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/net v0.39.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 )
